@@ -188,7 +188,7 @@ section { padding: 100px 60px; }
 }
 .team-card:hover { transform: translateY(-4px); }
 .team-card-photo {
-  width: 100%; aspect-ratio: 3/4; background: var(--lavender);
+  width: 100%; aspect-ratio: 4/3; background: var(--lavender);
   display: flex; align-items: center; justify-content: center; overflow: hidden;
 }
 .team-card-photo img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
@@ -422,7 +422,7 @@ section { padding: 100px 60px; }
   .hero-right { display: none; }
   section { padding: 64px 20px; }
   .team-grid { grid-template-columns: repeat(2, 1fr); }
-  .team-card-photo { aspect-ratio: 4/5; }
+  .team-card-photo { aspect-ratio: 4/3; }
   .partnerships-layout { grid-template-columns: 1fr; gap: 40px; margin-top: 36px; }
   .partner-highlight { grid-template-columns: 1fr; margin-top: 32px; }
   .volunteers-layout { grid-template-columns: 1fr; gap: 40px; }
@@ -437,7 +437,7 @@ section { padding: 100px 60px; }
   .hero-title { font-size: clamp(2.2rem, 11vw, 3rem); }
   section { padding: 52px 16px; }
   .team-grid { grid-template-columns: 1fr; }
-  .team-card-photo { aspect-ratio: 1/1; }
+  .team-card-photo { aspect-ratio: 4/3; }
   .section-title { font-size: clamp(1.8rem, 9vw, 2.6rem); }
   .p-field input, .p-field textarea, .v-field input, .v-field select, .v-field textarea,
   .c-field input, .c-field textarea { font-size: 1rem; }
