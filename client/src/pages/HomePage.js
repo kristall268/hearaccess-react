@@ -335,7 +335,8 @@ function ContactSection() {
             <div className="contact-info-icon">📞</div>
             <div>
               <div className="contact-info-label">Phone</div>
-              <div className="contact-info-value">+7 (7xx) xxx-xx-xx</div>
+              <div className="contact-info-value">+7 (702) 385-48-95</div>
+               <div className="contact-info-value">+7 (771) 862-80-23</div>
             </div>
           </div>
         </div>
