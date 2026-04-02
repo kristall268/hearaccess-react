@@ -181,15 +181,25 @@ section { padding: 100px 60px; }
 ═══════════════════════════════════════════════════════════ */
 #team { background: linear-gradient(160deg, #faf7fc 0%, var(--white) 60%); }
 .team-header { margin-bottom: 70px; }
-.team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 36px; }
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 36px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
 .team-card {
   background: var(--white); overflow: visible;
-  cursor: pointer; transition: transform 0.35s ease;
+  cursor: pointer; transition: transform 0.35s ease, box-shadow 0.35s ease;
   display: flex; flex-direction: column; align-items: center;
-  padding: 40px 24px 28px;
+  padding: 40px 24px 32px;
   border: 1px solid rgba(59,19,71,0.06);
+  border-radius: 12px;
 }
-.team-card:hover { transform: translateY(-6px); }
+.team-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 36px rgba(59,19,71,0.1);
+}
 
 /* ── Circular photo wrapper with animated outline ── */
 .team-card-photo {
@@ -244,7 +254,10 @@ section { padding: 100px 60px; }
   font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase;
   color: var(--text-mid); font-weight: 500;
 }
-.team-card-bio { font-size: 0.85rem; line-height: 1.65; color: #9b7aaa; margin-top: 12px; font-weight: 300; }
+.team-card-bio {
+  font-size: 0.85rem; line-height: 1.65; color: #9b7aaa; margin-top: 12px; font-weight: 300;
+  display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
+}
 
 /* ═══════════════════════════════════════════════════════════
    PARTNERSHIPS
@@ -458,6 +471,8 @@ section { padding: 100px 60px; }
   .hero-right { display: none; }
   section { padding: 64px 20px; }
   .team-grid { grid-template-columns: repeat(2, 1fr); gap: 24px; }
+  .team-card { padding: 32px 20px 24px; }
+  .team-card-photo { width: 140px; height: 140px; }
   .partnerships-layout { grid-template-columns: 1fr; gap: 40px; margin-top: 36px; }
   .partner-highlight { grid-template-columns: 1fr; margin-top: 32px; }
   .volunteers-layout { grid-template-columns: 1fr; gap: 40px; }
@@ -471,8 +486,8 @@ section { padding: 100px 60px; }
   .hero-left { padding: 90px 20px 52px; }
   .hero-title { font-size: clamp(2.2rem, 11vw, 3rem); }
   section { padding: 52px 16px; }
-  .team-grid { grid-template-columns: 1fr; max-width: 340px; margin: 0 auto; }
-  .team-card-photo { width: 140px; height: 140px; }
+  .team-grid { grid-template-columns: 1fr; max-width: 340px; margin: 0 auto; gap: 20px; }
+  .team-card-photo { width: 130px; height: 130px; }
   .section-title { font-size: clamp(1.8rem, 9vw, 2.6rem); }
   .p-field input, .p-field textarea, .v-field input, .v-field select, .v-field textarea,
   .c-field input, .c-field textarea { font-size: 1rem; }
