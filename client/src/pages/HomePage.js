@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { PersonIcon } from '../components/Icons';
@@ -59,6 +59,11 @@ function HeroSection() {
 
 /* ── TEAM ── */
 function TeamSection({ members }) {
+  const scrollRef = useRef(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+  const [wrapClass, setWrapClass] = useState('');
+
   const placeholders = [
     { member_name: 'Volunteer Name', member_role: 'Founder · Educator' },
     { member_name: 'Volunteer Name', member_role: 'AI Developer' },
@@ -67,6 +72,64 @@ function TeamSection({ members }) {
   ];
 
   const list = members.length > 0 ? members : placeholders;
+
+  const updateArrows = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    const left = el.scrollLeft > 2;
+    const right = el.scrollLeft + el.clientWidth < el.scrollWidth - 2;
+
+    setCanScrollLeft(left);
+    setCanScrollRight(right);
+
+    // Update fade classes
+    if (!left && !right) setWrapClass('scrolled-start scrolled-end');
+    else if (!left) setWrapClass('scrolled-start');
+    else if (!right) setWrapClass('scrolled-end');
+    else setWrapClass('scrolled-mid');
+  }, []);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    updateArrows();
+
+    el.addEventListener('scroll', updateArrows, { passive: true });
+    window.addEventListener('resize', updateArrows);
+
+    // Re-check after images load
+    const observer = new MutationObserver(updateArrows);
+    observer.observe(el, { childList: true, subtree: true });
+
+    return () => {
+      el.removeEventListener('scroll', updateArrows);
+      window.removeEventListener('resize', updateArrows);
+      observer.disconnect();
+    };
+  }, [updateArrows, list.length]);
+
+  const scroll = (direction) => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    // Get actual card width from first child
+    const firstCard = el.querySelector('.team-card');
+    if (!firstCard) return;
+
+    const gap = parseFloat(getComputedStyle(el).gap) || 28;
+    const cardWidth = firstCard.offsetWidth + gap;
+    const visible = Math.floor(el.clientWidth / cardWidth);
+    // Scroll by ~2 cards, or at least 1, but not more than visible count
+    const scrollCards = Math.max(1, Math.min(visible, Math.floor(visible * 0.6) + 1));
+    const scrollAmount = scrollCards * cardWidth;
+
+    el.scrollBy({
+      left: direction === 'right' ? scrollAmount : -scrollAmount,
+      behavior: 'smooth',
+    });
+  };
 
   return (
     <section id="team">
@@ -78,26 +141,49 @@ function TeamSection({ members }) {
           committed to empowering girls through education and technology.
         </p>
       </div>
-      <div className="team-grid">
-        {list.map((m, i) => (
-          <div className="team-card" key={m.id || i}>
-            <div className="team-card-photo">
-              {m.photo_url ? (
-                <img src={m.photo_url} alt={m.member_name} loading="lazy" />
-              ) : (
-                <div className="team-photo-placeholder"><PersonIcon /></div>
-              )}
+
+      <div className={`team-scroll-wrap ${wrapClass}`}>
+        {canScrollLeft && (
+          <button
+            className="team-arrow team-arrow--left"
+            onClick={() => scroll('left')}
+            aria-label="Scroll left"
+          >
+            ‹
+          </button>
+        )}
+
+        <div className="team-grid" ref={scrollRef}>
+          {list.map((m, i) => (
+            <div className="team-card" key={m.id || i}>
+              <div className="team-card-photo">
+                {m.photo_url ? (
+                  <img src={m.photo_url} alt={m.member_name} loading="lazy" />
+                ) : (
+                  <div className="team-photo-placeholder"><PersonIcon /></div>
+                )}
+              </div>
+              <div className="team-card-info">
+                <div className="team-card-name">{m.member_name}</div>
+                <div className="team-card-role">{m.member_role}</div>
+                {m.member_bio && <div className="team-card-bio">{m.member_bio}</div>}
+                {!m.member_bio && !m.id && (
+                  <div className="team-card-bio">Short bio about this team member's role and passion for the mission.</div>
+                )}
+              </div>
             </div>
-            <div className="team-card-info">
-              <div className="team-card-name">{m.member_name}</div>
-              <div className="team-card-role">{m.member_role}</div>
-              {m.member_bio && <div className="team-card-bio">{m.member_bio}</div>}
-              {!m.member_bio && !m.id && (
-                <div className="team-card-bio">Short bio about this team member's role and passion for the mission.</div>
-              )}
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
+
+        {canScrollRight && (
+          <button
+            className="team-arrow team-arrow--right"
+            onClick={() => scroll('right')}
+            aria-label="Scroll right"
+          >
+            ›
+          </button>
+        )}
       </div>
     </section>
   );
@@ -335,8 +421,7 @@ function ContactSection() {
             <div className="contact-info-icon">📞</div>
             <div>
               <div className="contact-info-label">Phone</div>
-              <div className="contact-info-value">+7 (702) 385-48-95</div>
-               <div className="contact-info-value">+7 (771) 862-80-23</div>
+              <div className="contact-info-value">+7 (7xx) xxx-xx-xx</div>
             </div>
           </div>
         </div>
