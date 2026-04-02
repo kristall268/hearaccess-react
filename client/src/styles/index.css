@@ -181,25 +181,61 @@ section { padding: 100px 60px; }
 ═══════════════════════════════════════════════════════════ */
 #team { background: linear-gradient(160deg, #faf7fc 0%, var(--white) 60%); }
 .team-header { margin-bottom: 70px; }
-.team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 2px; }
+.team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 36px; }
 .team-card {
-  background: var(--white); overflow: hidden;
-  cursor: pointer; transition: transform 0.3s ease;
+  background: var(--white); overflow: visible;
+  cursor: pointer; transition: transform 0.35s ease;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 40px 24px 28px;
+  border: 1px solid rgba(59,19,71,0.06);
 }
-.team-card:hover { transform: translateY(-4px); }
+.team-card:hover { transform: translateY(-6px); }
+
+/* ── Circular photo wrapper with animated outline ── */
 .team-card-photo {
-  width: 100%; aspect-ratio: 4/3; background: var(--lavender);
-  display: flex; align-items: center; justify-content: center; overflow: hidden;
+  width: 160px; height: 160px;
+  border-radius: 50%;
+  background: var(--lavender);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+  box-shadow: 0 4px 20px rgba(59,19,71,0.08);
+  transition: box-shadow 0.35s ease;
 }
-.team-card-photo img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
-.team-card:hover .team-card-photo img { transform: scale(1.04); }
+.team-card-photo::after {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  transition: border-color 0.35s ease, transform 0.35s ease;
+  pointer-events: none;
+}
+.team-card:hover .team-card-photo {
+  box-shadow: 0 8px 30px rgba(59,19,71,0.18);
+}
+.team-card:hover .team-card-photo::after {
+  border-color: #A78BBF;
+  transform: scale(1.06);
+}
+
+.team-card-photo img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  border-radius: 50%;
+  transition: transform 0.5s ease;
+}
+.team-card:hover .team-card-photo img { transform: scale(1.08); }
+
 .team-photo-placeholder {
   width: 100%; height: 100%;
   background: linear-gradient(145deg, var(--lavender), rgba(59,19,71,0.15));
   display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
 }
 .team-photo-placeholder svg { opacity: 0.25; }
-.team-card-info { padding: 22px 24px 28px; border-top: 1px solid var(--light-gray); }
+
+.team-card-info { padding: 22px 0 0; text-align: center; border-top: none; }
 .team-card-name {
   font-family: 'Cormorant Garamond', serif;
   font-size: 1.2rem; font-weight: 600; color: var(--deep-purple); margin-bottom: 4px;
@@ -421,8 +457,7 @@ section { padding: 100px 60px; }
   .hero-cta { width: 100%; justify-content: center; }
   .hero-right { display: none; }
   section { padding: 64px 20px; }
-  .team-grid { grid-template-columns: repeat(2, 1fr); }
-  .team-card-photo { aspect-ratio: 4/3; }
+  .team-grid { grid-template-columns: repeat(2, 1fr); gap: 24px; }
   .partnerships-layout { grid-template-columns: 1fr; gap: 40px; margin-top: 36px; }
   .partner-highlight { grid-template-columns: 1fr; margin-top: 32px; }
   .volunteers-layout { grid-template-columns: 1fr; gap: 40px; }
@@ -436,8 +471,8 @@ section { padding: 100px 60px; }
   .hero-left { padding: 90px 20px 52px; }
   .hero-title { font-size: clamp(2.2rem, 11vw, 3rem); }
   section { padding: 52px 16px; }
-  .team-grid { grid-template-columns: 1fr; }
-  .team-card-photo { aspect-ratio: 4/3; }
+  .team-grid { grid-template-columns: 1fr; max-width: 340px; margin: 0 auto; }
+  .team-card-photo { width: 140px; height: 140px; }
   .section-title { font-size: clamp(1.8rem, 9vw, 2.6rem); }
   .p-field input, .p-field textarea, .v-field input, .v-field select, .v-field textarea,
   .c-field input, .c-field textarea { font-size: 1rem; }
