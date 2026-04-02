@@ -1,431 +1,571 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
-import { PersonIcon } from '../components/Icons';
-import useForm from '../hooks/useForm';
-import api from '../api';
-
-export default function HomePage() {
-  const [teamMembers, setTeamMembers] = useState([]);
-
-  useEffect(() => {
-    api.getTeam().then(setTeamMembers).catch(() => {});
-  }, []);
-
-  return (
-    <>
-      <Navbar />
-      <HeroSection />
-      <TeamSection members={teamMembers} />
-      <PartnershipsSection />
-      <VolunteersSection />
-      <ContactSection />
-      <Footer />
-    </>
-  );
+:root {
+  --deep-purple: #3B1347;
+  --light-gray: #DBDBDB;
+  --lavender: #F4D1FF;
+  --white: #FFFFFF;
+  --text-dark: #1a0a23;
+  --text-mid: #6b4f7a;
 }
 
-/* ── HERO ── */
-function HeroSection() {
-  return (
-    <section className="hero" id="home">
-      <div className="hero-left">
-        <div className="hero-eyebrow">Education · Technology · Empowerment</div>
-        <h1 className="hero-title">
-          Empowering<br />
-          <em>girls &amp; women</em>
-          to learn &amp; grow
-        </h1>
-        <p className="hero-desc">
-          HerAccess empowers girls and women in restricted regions through education
-          and technology. We provide AI-driven tools, online courses, and mentorship
-          programs to give every girl the opportunity to learn and grow.
-        </p>
-        <a href="#team" className="hero-cta">
-          Discover our mission <span className="hero-cta-arrow">→</span>
-        </a>
-      </div>
-      <div className="hero-right">
-        <div className="hero-stat-grid">
-          <div className="hero-stat"><div className="hero-stat-num">AI</div><div className="hero-stat-label">Driven learning<br />tools</div></div>
-          <div className="hero-stat"><div className="hero-stat-num">∞</div><div className="hero-stat-label">Online courses<br />&amp; resources</div></div>
-          <div className="hero-stat"><div className="hero-stat-num">1:1</div><div className="hero-stat-label">Mentorship<br />programs</div></div>
-          <div className="hero-stat"><div className="hero-stat-num">🌍</div><div className="hero-stat-label">Restricted<br />regions focus</div></div>
-        </div>
-      </div>
-    </section>
-  );
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--white);
+  color: var(--text-dark);
+  overflow-x: hidden;
 }
 
-/* ── TEAM ── */
-function TeamSection({ members }) {
-  const scrollRef = useRef(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
-  const [wrapClass, setWrapClass] = useState('');
-
-  const placeholders = [
-    { member_name: 'Volunteer Name', member_role: 'Founder · Educator' },
-    { member_name: 'Volunteer Name', member_role: 'AI Developer' },
-    { member_name: 'Volunteer Name', member_role: 'SMM Manager' },
-    { member_name: 'Volunteer Name', member_role: 'Project Manager' },
-  ];
-
-  const list = members.length > 0 ? members : placeholders;
-
-  const updateArrows = useCallback(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-
-    const left = el.scrollLeft > 2;
-    const right = el.scrollLeft + el.clientWidth < el.scrollWidth - 2;
-
-    setCanScrollLeft(left);
-    setCanScrollRight(right);
-
-    // Update fade classes
-    if (!left && !right) setWrapClass('scrolled-start scrolled-end');
-    else if (!left) setWrapClass('scrolled-start');
-    else if (!right) setWrapClass('scrolled-end');
-    else setWrapClass('scrolled-mid');
-  }, []);
-
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-
-    updateArrows();
-
-    el.addEventListener('scroll', updateArrows, { passive: true });
-    window.addEventListener('resize', updateArrows);
-
-    // Re-check after images load
-    const observer = new MutationObserver(updateArrows);
-    observer.observe(el, { childList: true, subtree: true });
-
-    return () => {
-      el.removeEventListener('scroll', updateArrows);
-      window.removeEventListener('resize', updateArrows);
-      observer.disconnect();
-    };
-  }, [updateArrows, list.length]);
-
-  const scroll = (direction) => {
-    const el = scrollRef.current;
-    if (!el) return;
-
-    // Get actual card width from first child
-    const firstCard = el.querySelector('.team-card');
-    if (!firstCard) return;
-
-    const gap = parseFloat(getComputedStyle(el).gap) || 28;
-    const cardWidth = firstCard.offsetWidth + gap;
-    const visible = Math.floor(el.clientWidth / cardWidth);
-    // Scroll by ~2 cards, or at least 1, but not more than visible count
-    const scrollCards = Math.max(1, Math.min(visible, Math.floor(visible * 0.6) + 1));
-    const scrollAmount = scrollCards * cardWidth;
-
-    el.scrollBy({
-      left: direction === 'right' ? scrollAmount : -scrollAmount,
-      behavior: 'smooth',
-    });
-  };
-
-  return (
-    <section id="team">
-      <div className="team-header">
-        <div className="section-tag">Our People</div>
-        <h2 className="section-title">Meet the <em>team</em></h2>
-        <p className="section-body">
-          Our team is a passionate group of young leaders, educators, and creators
-          committed to empowering girls through education and technology.
-        </p>
-      </div>
-
-      <div className={`team-scroll-wrap ${wrapClass}`}>
-        {canScrollLeft && (
-          <button
-            className="team-arrow team-arrow--left"
-            onClick={() => scroll('left')}
-            aria-label="Scroll left"
-          >
-            ‹
-          </button>
-        )}
-
-        <div className="team-grid" ref={scrollRef}>
-          {list.map((m, i) => (
-            <div className="team-card" key={m.id || i}>
-              <div className="team-card-photo">
-                {m.photo_url ? (
-                  <img src={m.photo_url} alt={m.member_name} loading="lazy" />
-                ) : (
-                  <div className="team-photo-placeholder"><PersonIcon /></div>
-                )}
-              </div>
-              <div className="team-card-info">
-                <div className="team-card-name">{m.member_name}</div>
-                <div className="team-card-role">{m.member_role}</div>
-                {m.member_bio && <div className="team-card-bio">{m.member_bio}</div>}
-                {!m.member_bio && !m.id && (
-                  <div className="team-card-bio">Short bio about this team member's role and passion for the mission.</div>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {canScrollRight && (
-          <button
-            className="team-arrow team-arrow--right"
-            onClick={() => scroll('right')}
-            aria-label="Scroll right"
-          >
-            ›
-          </button>
-        )}
-      </div>
-    </section>
-  );
+/* ═══════════════════════════════════════════════════════════
+   NAV
+═══════════════════════════════════════════════════════════ */
+.site-nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  padding: 22px 60px;
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(255,255,255,0.88);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(59,19,71,0.08);
 }
 
-/* ── PARTNERSHIPS ── */
-function PartnershipsSection() {
-  const form = useForm({ full_name: '', email: '', organization: '', message: '' });
+.nav-logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.7rem; font-weight: 600;
+  color: var(--deep-purple); letter-spacing: 0.02em;
+  text-decoration: none;
+}
+.nav-logo span { color: var(--text-mid); font-style: italic; font-weight: 300; }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    form.setSubmitting(true);
-    form.setError('');
-    form.setSuccess('');
-    try {
-      const res = await api.submitPartnership(form.values);
-      if (res.error) throw new Error(res.error);
-      form.setSuccess('Partnership request submitted successfully!');
-      form.reset();
-    } catch (err) {
-      form.setError(err.message || 'Something went wrong.');
-    } finally {
-      form.setSubmitting(false);
-    }
-  };
+.nav-links { display: flex; gap: 36px; list-style: none; }
+.nav-links a {
+  font-size: 0.82rem; font-weight: 500;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-mid); text-decoration: none;
+  position: relative; transition: color 0.2s;
+}
+.nav-links a::after {
+  content: ''; position: absolute; bottom: -3px; left: 0; right: 0;
+  height: 1px; background: var(--deep-purple);
+  transform: scaleX(0); transition: transform 0.25s ease;
+}
+.nav-links a:hover { color: var(--deep-purple); }
+.nav-links a:hover::after { transform: scaleX(1); }
 
-  return (
-    <section id="partnerships">
-      <div className="section-tag">Collaborate</div>
-      <h2 className="section-title">Partner<br /><em>with us</em></h2>
-      <div className="partnerships-layout">
-        <div className="partnerships-text">
-          <p className="section-body" style={{ color: 'rgba(244,209,255,0.7)' }}>
-            If you're interested in partnering with us, please contact us through the form.
-            Together we can expand access to education for girls and women across restricted regions.
-          </p>
-          <div className="partner-highlight">
-            {[
-              { icon: '🤝', title: 'NGOs & Nonprofits', desc: 'Joint programs and outreach collaborations.' },
-              { icon: '🏛️', title: 'Institutions', desc: 'Academic and research partnerships.' },
-              { icon: '💼', title: 'Sponsors', desc: 'Fund scholarships and tech access.' },
-              { icon: '🚀', title: 'Tech Partners', desc: 'Build AI tools and platforms together.' },
-            ].map(h => (
-              <div className="p-highlight-item" key={h.title}>
-                <div className="p-highlight-icon">{h.icon}</div>
-                <div className="p-highlight-title">{h.title}</div>
-                <div className="p-highlight-desc">{h.desc}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-        <form className="partnership-form" onSubmit={handleSubmit}>
-          {form.success && <div className="form-banner form-banner--success">{form.success}</div>}
-          {form.error && <div className="form-banner form-banner--error">{form.error}</div>}
-          <div className="p-field">
-            <label>Full Name</label>
-            <input name="full_name" type="text" placeholder="Your name" value={form.values.full_name} onChange={form.handleChange} required />
-          </div>
-          <div className="p-field">
-            <label>Email Address</label>
-            <input name="email" type="email" placeholder="your@email.com" value={form.values.email} onChange={form.handleChange} required />
-          </div>
-          <div className="p-field">
-            <label>Organization</label>
-            <input name="organization" type="text" placeholder="Organization name" value={form.values.organization} onChange={form.handleChange} required />
-          </div>
-          <div className="p-field">
-            <label>Message</label>
-            <textarea name="message" rows="5" placeholder="Tell us about your partnership idea..." value={form.values.message} onChange={form.handleChange} />
-          </div>
-          <button className="btn-submit" type="submit" disabled={form.submitting}>
-            {form.submitting ? 'Sending...' : 'Send Partnership Request'}
-          </button>
-        </form>
-      </div>
-    </section>
-  );
+/* Hamburger */
+.nav-hamburger {
+  display: none; flex-direction: column; justify-content: center;
+  gap: 5px; width: 36px; height: 36px;
+  background: none; border: none; cursor: pointer; padding: 4px; z-index: 110;
+}
+.nav-hamburger span {
+  display: block; width: 100%; height: 1.5px;
+  background: var(--deep-purple);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  transform-origin: center;
+}
+.nav-hamburger.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+.nav-hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+.nav-hamburger.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+/* Mobile drawer */
+.nav-drawer {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: var(--deep-purple); z-index: 105;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+}
+.nav-drawer.open { opacity: 1; pointer-events: all; }
+.nav-drawer ul { list-style: none; display: flex; flex-direction: column; align-items: center; width: 100%; }
+.nav-drawer ul li a {
+  display: block; padding: 20px 40px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2.4rem; font-weight: 300;
+  color: var(--lavender); text-decoration: none;
+  text-align: center; transition: color 0.2s;
+  border-bottom: 1px solid rgba(244,209,255,0.08); width: 100%;
+}
+.nav-drawer ul li:first-child a { border-top: 1px solid rgba(244,209,255,0.08); }
+.nav-drawer ul li a:hover { color: var(--white); }
+
+/* ═══════════════════════════════════════════════════════════
+   HERO
+═══════════════════════════════════════════════════════════ */
+.hero {
+  min-height: 100vh; display: grid;
+  grid-template-columns: 1fr 1fr;
+  position: relative; overflow: hidden;
+}
+.hero-left {
+  background: var(--deep-purple);
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 120px 70px 80px; position: relative;
+}
+.hero-left::before {
+  content: ''; position: absolute; top: 0; right: 0; bottom: 0;
+  width: 1px; background: rgba(244,209,255,0.2);
+}
+.hero-eyebrow {
+  font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--lavender); opacity: 0.7; margin-bottom: 28px;
+}
+.hero-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2.6rem, 5vw, 5.5rem);
+  font-weight: 300; color: var(--white); line-height: 1.05; margin-bottom: 30px;
+}
+.hero-title em { font-style: italic; color: var(--lavender); display: block; }
+.hero-desc {
+  font-size: 1rem; line-height: 1.75;
+  color: rgba(244,209,255,0.75); max-width: 420px;
+  font-weight: 300; margin-bottom: 48px;
+}
+.hero-cta {
+  display: inline-flex; align-items: center; gap: 12px;
+  background: transparent; border: 1px solid rgba(244,209,255,0.4);
+  color: var(--lavender); padding: 14px 32px;
+  font-size: 0.82rem; letter-spacing: 0.12em; text-transform: uppercase;
+  text-decoration: none; transition: all 0.3s ease; cursor: pointer; align-self: flex-start;
+}
+.hero-cta:hover { background: rgba(244,209,255,0.1); border-color: var(--lavender); gap: 18px; }
+.hero-cta-arrow { font-size: 1rem; transition: transform 0.3s; }
+.hero-cta:hover .hero-cta-arrow { transform: translateX(4px); }
+
+.hero-right {
+  background: var(--lavender);
+  display: flex; align-items: center; justify-content: center;
+  padding: 120px 60px 80px; position: relative; overflow: hidden;
+}
+.hero-right::before {
+  content: 'HER\AACCESS'; white-space: pre;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 11rem; font-weight: 300; color: rgba(59,19,71,0.06);
+  position: absolute; line-height: 0.85; right: -20px; top: 50%;
+  transform: translateY(-50%); pointer-events: none;
+}
+.hero-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; width: 100%; max-width: 380px; }
+.hero-stat { background: rgba(255,255,255,0.5); padding: 36px 28px; }
+.hero-stat:first-child { background: rgba(59,19,71,0.08); }
+.hero-stat-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 3.2rem; font-weight: 600; color: var(--deep-purple);
+  line-height: 1; margin-bottom: 8px;
+}
+.hero-stat-label {
+  font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text-mid); font-weight: 500; line-height: 1.4;
 }
 
-/* ── VOLUNTEERS ── */
-function VolunteersSection() {
-  const form = useForm({ full_name: '', email: '', role: '', message: '' });
+/* ═══════════════════════════════════════════════════════════
+   SECTIONS
+═══════════════════════════════════════════════════════════ */
+section { padding: 100px 60px; }
+.section-tag {
+  font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--text-mid); margin-bottom: 16px;
+  display: flex; align-items: center; gap: 10px;
+}
+.section-tag::before {
+  content: ''; display: inline-block; width: 28px; height: 1px; background: var(--text-mid);
+}
+.section-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2rem, 4vw, 3.8rem); font-weight: 300;
+  line-height: 1.1; color: var(--deep-purple); margin-bottom: 24px;
+}
+.section-title em { font-style: italic; color: var(--text-mid); }
+.section-body { font-size: 1rem; line-height: 1.8; color: var(--text-mid); font-weight: 300; max-width: 620px; }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    form.setSubmitting(true);
-    form.setError('');
-    form.setSuccess('');
-    try {
-      const res = await api.submitVolunteer(form.values);
-      if (res.error) throw new Error(res.error);
-      form.setSuccess('Volunteer application submitted successfully!');
-      form.reset();
-    } catch (err) {
-      form.setError(err.message || 'Something went wrong.');
-    } finally {
-      form.setSubmitting(false);
-    }
-  };
+/* ═══════════════════════════════════════════════════════════
+   TEAM
+═══════════════════════════════════════════════════════════ */
+#team { background: linear-gradient(160deg, #faf7fc 0%, var(--white) 60%); }
+.team-header { margin-bottom: 70px; }
 
-  const roles = [
-    { num: '01', name: 'Teachers' },
-    { num: '02', name: 'SMM Managers' },
-    { num: '03', name: 'Event Managers' },
-    { num: '04', name: 'Technical Leaders / Developers' },
-  ];
-
-  return (
-    <section id="volunteers">
-      <div className="volunteers-layout">
-        <div>
-          <div className="section-tag">Get Involved</div>
-          <h2 className="section-title">Join our <em>team</em></h2>
-          <p style={{ fontSize: '1rem', lineHeight: 1.8, color: 'var(--text-mid)', fontWeight: 300, maxWidth: 400 }}>
-            Be part of a project that changes lives and gives girls the chance to grow and succeed.
-          </p>
-          <div className="role-list">
-            {roles.map(r => (
-              <div className="role-item" key={r.num}>
-                <span className="role-number">{r.num}</span>
-                <span className="role-name">{r.name}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="volunteers-cta" style={{ paddingTop: 80 }}>
-          <h3 style={{
-            fontFamily: "'Cormorant Garamond', serif", fontSize: '2.6rem', fontWeight: 300,
-            color: 'var(--deep-purple)', lineHeight: 1.1, marginBottom: 24
-          }}>
-            Make a real<br /><em style={{ fontStyle: 'italic', color: 'var(--text-mid)' }}>difference</em>
-          </h3>
-          <p>
-            We're actively looking for passionate volunteers to help us expand HerAccess
-            across Central Asia and beyond. No matter your skill set — if you care about
-            equal education, there's a place for you here.
-          </p>
-          <form className="volunteer-form" onSubmit={handleSubmit}>
-            {form.success && <div className="form-banner form-banner--success">{form.success}</div>}
-            {form.error && <div className="form-banner form-banner--error">{form.error}</div>}
-            <div className="v-field">
-              <label>Full Name</label>
-              <input name="full_name" type="text" placeholder="Your full name" value={form.values.full_name} onChange={form.handleChange} required />
-            </div>
-            <div className="v-field">
-              <label>Email Address</label>
-              <input name="email" type="email" placeholder="your@email.com" value={form.values.email} onChange={form.handleChange} required />
-            </div>
-            <div className="v-field">
-              <label>Role you're applying for</label>
-              <select name="role" value={form.values.role} onChange={form.handleChange} required>
-                <option value="">Select a role…</option>
-                <option value="Teacher">Teacher</option>
-                <option value="SMM Manager">SMM Manager</option>
-                <option value="Event Manager">Event Manager</option>
-                <option value="Technical Leader / Developer">Technical Leader / Developer</option>
-              </select>
-            </div>
-            <div className="v-field">
-              <label>Why do you want to join? <span style={{ opacity: 0.5, fontStyle: 'italic' }}>(optional)</span></label>
-              <textarea name="message" rows="4" placeholder="Tell us a bit about yourself…" value={form.values.message} onChange={form.handleChange} />
-            </div>
-            <button className="btn-join" type="submit" disabled={form.submitting}>
-              {form.submitting ? 'Sending...' : 'Apply as Volunteer'} <span>→</span>
-            </button>
-          </form>
-        </div>
-      </div>
-    </section>
-  );
+/* ── Scroll wrapper (positions arrows) ── */
+.team-scroll-wrap {
+  position: relative;
 }
 
-/* ── CONTACT ── */
-function ContactSection() {
-  const form = useForm({ full_name: '', email: '', subject: '', message: '' });
+/* ── Horizontal scroll container ── */
+.team-grid {
+  display: flex;
+  gap: 28px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px 4px 20px;
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    form.setSubmitting(true);
-    form.setError('');
-    form.setSuccess('');
-    try {
-      const res = await api.submitContact(form.values);
-      if (res.error) throw new Error(res.error);
-      form.setSuccess('Contact message sent successfully!');
-      form.reset();
-    } catch (err) {
-      form.setError(err.message || 'Something went wrong.');
-    } finally {
-      form.setSubmitting(false);
-    }
-  };
+  /* Hide scrollbar */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.team-grid::-webkit-scrollbar { display: none; }
 
-  return (
-    <section id="contact">
-      <div className="section-tag">Reach Out</div>
-      <h2 className="section-title">Contact <em>us</em></h2>
-      <p className="section-body">Have a question or want to join our mission? Fill out the form below and we'll get back to you as soon as possible.</p>
-      <div className="contact-layout">
-        <form className="contact-form" onSubmit={handleSubmit}>
-          {form.success && <div className="form-banner form-banner--success">{form.success}</div>}
-          {form.error && <div className="form-banner form-banner--error">{form.error}</div>}
-          <div className="c-field">
-            <label>Full Name</label>
-            <input name="full_name" type="text" placeholder="Your full name" value={form.values.full_name} onChange={form.handleChange} required />
-          </div>
-          <div className="c-field">
-            <label>Email Address</label>
-            <input name="email" type="email" placeholder="your@email.com" value={form.values.email} onChange={form.handleChange} required />
-          </div>
-          <div className="c-field">
-            <label>Subject</label>
-            <input name="subject" type="text" placeholder="What's this about?" value={form.values.subject} onChange={form.handleChange} required />
-          </div>
-          <div className="c-field">
-            <label>Your Message</label>
-            <textarea name="message" rows="6" placeholder="Write your message here..." value={form.values.message} onChange={form.handleChange} required />
-          </div>
-          <button className="btn-send" type="submit" disabled={form.submitting}>
-            {form.submitting ? 'Sending...' : 'Send Message'}
-          </button>
-        </form>
-        <div className="contact-info">
-          <div className="contact-info-title">Contact Information</div>
-          <div className="contact-info-item">
-            <div className="contact-info-icon">📧</div>
-            <div>
-              <div className="contact-info-label">Email</div>
-              <div className="contact-info-value">
-                <a href="mailto:heraccess6@gmail.com">heraccess6@gmail.com</a>
-              </div>
-            </div>
-          </div>
-          <div className="contact-info-item">
-            <div className="contact-info-icon">📞</div>
-            <div>
-              <div className="contact-info-label">Phone</div>
-              <div className="contact-info-value">+7 (7xx) xxx-xx-xx</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
+/* ── Fixed-width card ── */
+.team-card {
+  flex: 0 0 260px;
+  scroll-snap-align: start;
+  background: var(--white); overflow: visible;
+  cursor: pointer; transition: transform 0.35s ease, box-shadow 0.35s ease;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 40px 24px 32px;
+  border: 1px solid rgba(59,19,71,0.06);
+  border-radius: 12px;
+}
+.team-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 36px rgba(59,19,71,0.1);
+}
+
+/* ── Scroll arrows ── */
+.team-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  border: 1px solid rgba(59,19,71,0.12);
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(8px);
+  color: var(--deep-purple);
+  font-size: 1.2rem;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 16px rgba(59,19,71,0.1);
+}
+.team-arrow:hover {
+  background: var(--deep-purple);
+  color: var(--lavender);
+  border-color: var(--deep-purple);
+  box-shadow: 0 6px 24px rgba(59,19,71,0.2);
+}
+.team-arrow--left { left: -24px; }
+.team-arrow--right { right: -24px; }
+.team-arrow.hidden { opacity: 0; pointer-events: none; }
+
+/* ── Fade edges to hint scrollability ── */
+.team-scroll-wrap::before,
+.team-scroll-wrap::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0; width: 40px;
+  z-index: 5;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+.team-scroll-wrap::before {
+  left: 0;
+  background: linear-gradient(to right, #f8f5fb, transparent);
+  opacity: 0;
+}
+.team-scroll-wrap::after {
+  right: 0;
+  background: linear-gradient(to left, #f8f5fb, transparent);
+}
+.team-scroll-wrap.scrolled-start::before { opacity: 0; }
+.team-scroll-wrap.scrolled-end::after { opacity: 0; }
+.team-scroll-wrap.scrolled-mid::before { opacity: 1; }
+
+/* ── Circular photo wrapper with animated outline ── */
+.team-card-photo {
+  width: 160px; height: 160px;
+  border-radius: 50%;
+  background: var(--lavender);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+  box-shadow: 0 4px 20px rgba(59,19,71,0.08);
+  transition: box-shadow 0.35s ease;
+}
+.team-card-photo::after {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  transition: border-color 0.35s ease, transform 0.35s ease;
+  pointer-events: none;
+}
+.team-card:hover .team-card-photo {
+  box-shadow: 0 8px 30px rgba(59,19,71,0.18);
+}
+.team-card:hover .team-card-photo::after {
+  border-color: #A78BBF;
+  transform: scale(1.06);
+}
+
+.team-card-photo img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  border-radius: 50%;
+  transition: transform 0.5s ease;
+}
+.team-card:hover .team-card-photo img { transform: scale(1.08); }
+
+.team-photo-placeholder {
+  width: 100%; height: 100%;
+  background: linear-gradient(145deg, var(--lavender), rgba(59,19,71,0.15));
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+}
+.team-photo-placeholder svg { opacity: 0.25; }
+
+.team-card-info { padding: 22px 0 0; text-align: center; border-top: none; }
+.team-card-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.2rem; font-weight: 600; color: var(--deep-purple); margin-bottom: 4px;
+}
+.team-card-role {
+  font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-mid); font-weight: 500;
+}
+.team-card-bio {
+  font-size: 0.85rem; line-height: 1.65; color: #9b7aaa; margin-top: 12px; font-weight: 300;
+  display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PARTNERSHIPS
+═══════════════════════════════════════════════════════════ */
+#partnerships { background: var(--deep-purple); color: var(--white); }
+#partnerships .section-title { color: var(--white); }
+#partnerships .section-title em { color: var(--lavender); }
+#partnerships .section-tag { color: rgba(244,209,255,0.6); }
+#partnerships .section-tag::before { background: rgba(244,209,255,0.4); }
+
+.partnerships-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; margin-top: 60px; }
+.partnership-form { display: flex; flex-direction: column; gap: 16px; }
+
+.p-field { display: flex; flex-direction: column; gap: 6px; }
+.p-field label { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(244,209,255,0.5); }
+.p-field input, .p-field textarea {
+  background: rgba(244,209,255,0.06); border: 1px solid rgba(244,209,255,0.15);
+  padding: 14px 16px; color: var(--white);
+  font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+  outline: none; transition: border-color 0.2s; resize: none; width: 100%;
+}
+.p-field input:focus, .p-field textarea:focus { border-color: rgba(244,209,255,0.5); }
+.p-field input::placeholder, .p-field textarea::placeholder { color: rgba(244,209,255,0.2); }
+
+.btn-submit {
+  margin-top: 8px; background: var(--lavender); color: var(--deep-purple);
+  border: none; padding: 16px 36px;
+  font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 500;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  cursor: pointer; transition: all 0.25s; width: 100%; text-align: center;
+}
+.btn-submit:hover { background: var(--white); }
+
+.partnerships-text { padding-top: 10px; }
+.partner-highlight { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; margin-top: 50px; }
+.p-highlight-item {
+  background: rgba(244,209,255,0.05); padding: 32px 28px;
+  border: 1px solid rgba(244,209,255,0.08);
+}
+.p-highlight-icon { font-size: 1.6rem; margin-bottom: 14px; }
+.p-highlight-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem; font-weight: 600; color: var(--lavender); margin-bottom: 8px;
+}
+.p-highlight-desc { font-size: 0.82rem; line-height: 1.65; color: rgba(244,209,255,0.5); }
+
+/* ═══════════════════════════════════════════════════════════
+   VOLUNTEERS
+═══════════════════════════════════════════════════════════ */
+#volunteers {
+  background: var(--lavender); position: relative; overflow: hidden;
+}
+#volunteers::before {
+  content: 'JOIN'; font-family: 'Cormorant Garamond', serif;
+  font-size: 18rem; font-weight: 600; color: rgba(59,19,71,0.04);
+  position: absolute; bottom: -40px; right: -30px; line-height: 1; pointer-events: none;
+}
+
+.volunteers-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start; }
+.role-list { display: flex; flex-direction: column; gap: 2px; margin-top: 40px; }
+.role-item {
+  display: flex; align-items: center; gap: 16px;
+  padding: 20px 24px; background: rgba(255,255,255,0.5); transition: background 0.2s;
+}
+.role-item:hover { background: rgba(255,255,255,0.85); }
+.role-number {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.4rem; font-weight: 300; color: rgba(59,19,71,0.25); min-width: 28px;
+}
+.role-name { font-size: 0.95rem; font-weight: 500; color: var(--deep-purple); }
+
+.volunteers-cta { padding-top: 20px; }
+.volunteers-cta p { font-size: 1rem; line-height: 1.8; color: var(--text-mid); font-weight: 300; margin-bottom: 36px; }
+
+.volunteer-form { display: flex; flex-direction: column; gap: 16px; max-width: 520px; margin-top: 36px; }
+.v-field { display: flex; flex-direction: column; gap: 6px; }
+.v-field label { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-mid); }
+.v-field input, .v-field select, .v-field textarea {
+  background: var(--white); border: 1px solid var(--light-gray);
+  padding: 14px 16px; color: var(--text-dark);
+  font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+  outline: none; transition: border-color 0.2s; resize: none; appearance: none; width: 100%;
+}
+.v-field select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b4f7a' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 16px center; padding-right: 40px; cursor: pointer;
+}
+.v-field input:focus, .v-field select:focus, .v-field textarea:focus { border-color: var(--deep-purple); }
+.v-field input::placeholder, .v-field textarea::placeholder { color: var(--light-gray); }
+
+.btn-join {
+  display: inline-flex; align-items: center; gap: 12px;
+  background: var(--deep-purple); color: var(--lavender);
+  padding: 16px 36px; font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase;
+  border: none; cursor: pointer; transition: all 0.25s;
+}
+.btn-join:hover { background: var(--text-dark); gap: 18px; }
+
+/* ═══════════════════════════════════════════════════════════
+   CONTACT
+═══════════════════════════════════════════════════════════ */
+#contact { background: var(--white); }
+.contact-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; margin-top: 60px; }
+.contact-form { display: flex; flex-direction: column; gap: 16px; }
+.c-field { display: flex; flex-direction: column; gap: 6px; }
+.c-field label { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-mid); }
+.c-field input, .c-field textarea {
+  background: var(--white); border: 1px solid var(--light-gray);
+  padding: 14px 16px; color: var(--text-dark);
+  font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+  outline: none; transition: border-color 0.2s; resize: none; width: 100%;
+}
+.c-field input:focus, .c-field textarea:focus { border-color: var(--deep-purple); }
+.c-field input::placeholder, .c-field textarea::placeholder { color: var(--light-gray); }
+.btn-send {
+  margin-top: 8px; background: var(--deep-purple); color: var(--lavender);
+  border: none; padding: 16px 36px;
+  font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 500;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  cursor: pointer; transition: all 0.25s; width: 100%; text-align: center;
+}
+.btn-send:hover { background: var(--text-dark); }
+
+.contact-info { padding-top: 10px; }
+.contact-info-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.6rem; font-weight: 400; color: var(--deep-purple); margin-bottom: 30px;
+}
+.contact-info-item {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 20px 0; border-bottom: 1px solid var(--light-gray);
+}
+.contact-info-item:first-of-type { border-top: 1px solid var(--light-gray); }
+.contact-info-icon { font-size: 1.1rem; margin-top: 2px; }
+.contact-info-label { font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-mid); margin-bottom: 4px; }
+.contact-info-value { font-size: 0.95rem; color: var(--deep-purple); }
+.contact-info-value a { color: var(--deep-purple); text-decoration: none; }
+.contact-info-value a:hover { text-decoration: underline; }
+
+/* ═══════════════════════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════════════════════ */
+.site-footer {
+  background: var(--deep-purple); padding: 50px 60px;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 20px;
+}
+.footer-logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.4rem; font-weight: 600; color: var(--white);
+}
+.footer-logo span { font-style: italic; font-weight: 300; color: var(--lavender); }
+.footer-text { font-size: 0.8rem; color: rgba(244,209,255,0.4); letter-spacing: 0.06em; }
+.footer-links { display: flex; gap: 28px; flex-wrap: wrap; }
+.footer-links a {
+  font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: rgba(244,209,255,0.4); text-decoration: none; transition: color 0.2s;
+}
+.footer-links a:hover { color: var(--lavender); }
+
+/* ═══════════════════════════════════════════════════════════
+   FORM BANNERS
+═══════════════════════════════════════════════════════════ */
+.form-banner {
+  padding: 14px 18px; font-size: 0.88rem; line-height: 1.5;
+  margin-bottom: 8px; border-left: 3px solid transparent;
+}
+.form-banner--success { background: rgba(67,160,71,0.12); border-left-color: #43a047; color: #1b5e20; }
+.form-banner--error { background: rgba(192,57,43,0.15); border-left-color: #c0392b; color: #7f1d1d; }
+#partnerships .form-banner--success { color: #c8f5ca; }
+#partnerships .form-banner--error { color: #ffd1d1; }
+
+.field-error { font-size: 0.75rem; color: #c0392b; margin-top: 4px; }
+
+/* ═══════════════════════════════════════════════════════════
+   ANIMATIONS
+═══════════════════════════════════════════════════════════ */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.hero-left > * { animation: fadeUp 0.7s ease both; }
+.hero-left > *:nth-child(1) { animation-delay: 0.1s; }
+.hero-left > *:nth-child(2) { animation-delay: 0.25s; }
+.hero-left > *:nth-child(3) { animation-delay: 0.4s; }
+.hero-left > *:nth-child(4) { animation-delay: 0.55s; }
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .site-nav { padding: 18px 32px; }
+  .hero-left { padding: 110px 48px 80px; }
+  .hero-right { padding: 110px 40px 80px; }
+  .partnerships-layout, .volunteers-layout, .contact-layout { grid-template-columns: 1fr; gap: 52px; }
+  section { padding: 80px 40px; }
+  .site-footer { padding: 44px 40px; }
+}
+
+@media (max-width: 768px) {
+  .site-nav { padding: 16px 20px; }
+  .nav-links { display: none; }
+  .nav-hamburger { display: flex; }
+  .hero { grid-template-columns: 1fr; min-height: auto; }
+  .hero-left { padding: 100px 24px 60px; min-height: 100svh; }
+  .hero-left::before { display: none; }
+  .hero-title { font-size: clamp(2.6rem, 10vw, 3.8rem); }
+  .hero-desc { max-width: 100%; }
+  .hero-cta { width: 100%; justify-content: center; }
+  .hero-right { display: none; }
+  section { padding: 64px 20px; }
+  .team-grid { gap: 20px; }
+  .team-card { flex: 0 0 230px; padding: 32px 20px 24px; }
+  .team-card-photo { width: 130px; height: 130px; }
+  .team-arrow { width: 40px; height: 40px; font-size: 1rem; }
+  .team-arrow--left { left: -8px; }
+  .team-arrow--right { right: -8px; }
+  .partnerships-layout { grid-template-columns: 1fr; gap: 40px; margin-top: 36px; }
+  .partner-highlight { grid-template-columns: 1fr; margin-top: 32px; }
+  .volunteers-layout { grid-template-columns: 1fr; gap: 40px; }
+  .volunteers-cta { padding-top: 0; }
+  .btn-join { width: 100%; justify-content: center; }
+  .contact-layout { grid-template-columns: 1fr; gap: 40px; margin-top: 36px; }
+  .site-footer { flex-direction: column; align-items: center; text-align: center; padding: 36px 20px; }
+}
+
+@media (max-width: 480px) {
+  .hero-left { padding: 90px 20px 52px; }
+  .hero-title { font-size: clamp(2.2rem, 11vw, 3rem); }
+  section { padding: 52px 16px; }
+  .team-grid { gap: 16px; }
+  .team-card { flex: 0 0 200px; padding: 28px 16px 20px; }
+  .team-card-photo { width: 110px; height: 110px; }
+  .team-arrow { width: 36px; height: 36px; font-size: 0.9rem; }
+  .team-arrow--left { left: -4px; }
+  .team-arrow--right { right: -4px; }
+  .section-title { font-size: clamp(1.8rem, 9vw, 2.6rem); }
+  .p-field input, .p-field textarea, .v-field input, .v-field select, .v-field textarea,
+  .c-field input, .c-field textarea { font-size: 1rem; }
+  .site-footer { padding: 28px 16px; }
 }
