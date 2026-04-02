@@ -181,14 +181,32 @@ section { padding: 100px 60px; }
 ═══════════════════════════════════════════════════════════ */
 #team { background: linear-gradient(160deg, #faf7fc 0%, var(--white) 60%); }
 .team-header { margin-bottom: 70px; }
-.team-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 36px;
-  max-width: 1000px;
-  margin: 0 auto;
+
+/* ── Scroll wrapper (positions arrows) ── */
+.team-scroll-wrap {
+  position: relative;
 }
+
+/* ── Horizontal scroll container ── */
+.team-grid {
+  display: flex;
+  gap: 28px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px 4px 20px;
+
+  /* Hide scrollbar */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.team-grid::-webkit-scrollbar { display: none; }
+
+/* ── Fixed-width card ── */
 .team-card {
+  flex: 0 0 260px;
+  scroll-snap-align: start;
   background: var(--white); overflow: visible;
   cursor: pointer; transition: transform 0.35s ease, box-shadow 0.35s ease;
   display: flex; flex-direction: column; align-items: center;
@@ -200,6 +218,57 @@ section { padding: 100px 60px; }
   transform: translateY(-6px);
   box-shadow: 0 12px 36px rgba(59,19,71,0.1);
 }
+
+/* ── Scroll arrows ── */
+.team-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  border: 1px solid rgba(59,19,71,0.12);
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(8px);
+  color: var(--deep-purple);
+  font-size: 1.2rem;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 16px rgba(59,19,71,0.1);
+}
+.team-arrow:hover {
+  background: var(--deep-purple);
+  color: var(--lavender);
+  border-color: var(--deep-purple);
+  box-shadow: 0 6px 24px rgba(59,19,71,0.2);
+}
+.team-arrow--left { left: -24px; }
+.team-arrow--right { right: -24px; }
+.team-arrow.hidden { opacity: 0; pointer-events: none; }
+
+/* ── Fade edges to hint scrollability ── */
+.team-scroll-wrap::before,
+.team-scroll-wrap::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0; width: 40px;
+  z-index: 5;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+.team-scroll-wrap::before {
+  left: 0;
+  background: linear-gradient(to right, #f8f5fb, transparent);
+  opacity: 0;
+}
+.team-scroll-wrap::after {
+  right: 0;
+  background: linear-gradient(to left, #f8f5fb, transparent);
+}
+.team-scroll-wrap.scrolled-start::before { opacity: 0; }
+.team-scroll-wrap.scrolled-end::after { opacity: 0; }
+.team-scroll-wrap.scrolled-mid::before { opacity: 1; }
 
 /* ── Circular photo wrapper with animated outline ── */
 .team-card-photo {
@@ -470,9 +539,12 @@ section { padding: 100px 60px; }
   .hero-cta { width: 100%; justify-content: center; }
   .hero-right { display: none; }
   section { padding: 64px 20px; }
-  .team-grid { grid-template-columns: repeat(2, 1fr); gap: 24px; }
-  .team-card { padding: 32px 20px 24px; }
-  .team-card-photo { width: 140px; height: 140px; }
+  .team-grid { gap: 20px; }
+  .team-card { flex: 0 0 230px; padding: 32px 20px 24px; }
+  .team-card-photo { width: 130px; height: 130px; }
+  .team-arrow { width: 40px; height: 40px; font-size: 1rem; }
+  .team-arrow--left { left: -8px; }
+  .team-arrow--right { right: -8px; }
   .partnerships-layout { grid-template-columns: 1fr; gap: 40px; margin-top: 36px; }
   .partner-highlight { grid-template-columns: 1fr; margin-top: 32px; }
   .volunteers-layout { grid-template-columns: 1fr; gap: 40px; }
@@ -486,8 +558,12 @@ section { padding: 100px 60px; }
   .hero-left { padding: 90px 20px 52px; }
   .hero-title { font-size: clamp(2.2rem, 11vw, 3rem); }
   section { padding: 52px 16px; }
-  .team-grid { grid-template-columns: 1fr; max-width: 340px; margin: 0 auto; gap: 20px; }
-  .team-card-photo { width: 130px; height: 130px; }
+  .team-grid { gap: 16px; }
+  .team-card { flex: 0 0 200px; padding: 28px 16px 20px; }
+  .team-card-photo { width: 110px; height: 110px; }
+  .team-arrow { width: 36px; height: 36px; font-size: 0.9rem; }
+  .team-arrow--left { left: -4px; }
+  .team-arrow--right { right: -4px; }
   .section-title { font-size: clamp(1.8rem, 9vw, 2.6rem); }
   .p-field input, .p-field textarea, .v-field input, .v-field select, .v-field textarea,
   .c-field input, .c-field textarea { font-size: 1rem; }
